@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Le journal de Shinkiri Renjiro</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Shippori+Mincho:wght@400;600;800&family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --crimson-deep: #140306;
+            --crimson-main: #800f2f;
+            --crimson-bright: #e63946;
+            --gold-accent: #e9c46a;
+            --paper-bg: #1a070a;
+            --paper-light: #240a0e;
+            --ink-cream: #f8ece4;
+        }
+
+        body {
+            font-family: 'Cormorant Garamond', serif;
+            background-color: #070102;
+            color: var(--ink-cream);
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        .font-jp { font-family: 'Shippori Mincho', serif; }
+        .font-cinzel { font-family: 'Cinzel', serif; }
+
+        /* Arrière-plan thème forêt écarlate */
+        .bg-crimson-forest {
+            background-image:
+                radial-gradient(circle at 50% 25%, rgba(164, 22, 26, 0.25) 0%, rgba(7, 1, 2, 0.96) 75%),
+                url('https://i.pinimg.com/1200x/a7/b8/00/a7b80065c23363811ba67a273fb00d73.jpg');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }
+
+        /* Couverture du carnet */
+        .leather-cover {
+            background:
+                radial-gradient(circle at 25% 20%, rgba(230, 57, 70, 0.16), transparent 55%),
+                linear-gradient(145deg, #28060b 0%, #160306 55%, #0c0103 100%);
+            box-shadow:
+                0 25px 60px rgba(0, 0, 0, 0.95),
+                inset 0 0 0 2px rgba(233, 196, 106, 0.25),
+                inset 0 0 40px rgba(0, 0, 0, 0.85);
+            border: 1px solid rgba(230, 57, 70, 0.45);
+        }
+
+        .spine-binding {
+            background: linear-gradient(90deg, #090102 0%, #4a0612 35%, #1d0307 70%, #090102 100%);
+            box-shadow: inset -4px 0 12px rgba(0, 0, 0, 0.9);
+        }
+
+        /* Sceau Hanko */
+        .hanko-seal {
+            background: radial-gradient(circle at 30% 30%, #ff4d6d, #9d0208 65%, #370617 100%);
+            border: 2px solid rgba(233, 196, 106, 0.75);
+            box-shadow:
+                0 0 22px rgba(230, 57, 70, 0.55),
+                inset 0 2px 6px rgba(255, 255, 255, 0.25);
+        }
+
+        /* Livre/Page interne */
+        .journal-book {
+            background: linear-gradient(180deg, #21080c 0%, #170508 50%, #120406 100%);
+            border: 1px solid rgba(230, 57, 70, 0.35);
+            box-shadow:
+                0 25px 70px rgba(0, 0, 0, 0.95),
+                0 0 35px rgba(128, 15, 47, 0.25),
+                inset 0 0 50px rgba(0, 0, 0, 0.65);
+        }
+
+        .center-crease {
+            background: linear-gradient(90deg,
+                transparent 0%,
+                rgba(0, 0, 0, 0.55) 48%,
+                rgba(233, 196, 106, 0.12) 50%,
+                rgba(0, 0, 0, 0.55) 52%,
+                transparent 100%);
+        }
+
+        /* Animations */
+        .book-open-anim {
+            animation: bookReveal 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        @keyframes bookReveal {
+            0% { opacity: 0; transform: scale(0.92) rotateX(12deg); }
+            100% { opacity: 1; transform: scale(1) rotateX(0deg); }
+        }
+
+        .page-turn-anim {
+            animation: pageFade 0.45s ease-out forwards;
+        }
+
+        @keyframes pageFade {
+            0% { opacity: 0; transform: translateY(10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Pétales de Sakura */
+        .sakura-petal {
+            position: absolute;
+            background: linear-gradient(135deg, #ff5c77 0%, #800f2f 100%);
+            border-radius: 14px 2px 14px 2px;
+            pointer-events: none;
+            animation: sakuraFall linear infinite;
+        }
+
+        @keyframes sakuraFall {
+            0% { transform: translateY(-6vh) translateX(0) rotate(0deg); opacity: 0; }
+            12% { opacity: 0.75; }
+            88% { opacity: 0.65; }
+            100% { transform: translateY(106vh) translateX(90px) rotate(640deg); opacity: 0; }
+        }
+
+        .journal-scroll::-webkit-scrollbar { width: 6px; }
+        .journal-scroll::-webkit-scrollbar-track { background: rgba(12, 2, 4, 0.7); }
+        .journal-scroll::-webkit-scrollbar-thumb { background: rgba(230, 57, 70, 0.55); border-radius: 999px; }
+    </style>
+</head>
+<body class="bg-crimson-forest min-h-screen flex flex-col justify-between items-center relative">
+
+    <div id="sakuraLayer" class="fixed inset-0 pointer-events-none z-10 overflow-hidden"></div>
+
+    <!-- Barre supérieure : Audio & Titre -->
+    <header class="w-full max-w-6xl px-4 py-4 md:px-8 md:py-6 flex flex-wrap justify-between items-center gap-4 z-40">
+        <div class="flex items-center space-x-3">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_10px_#ff4d6d]"></span>
+            <span class="font-jp text-xs md:text-sm tracking-[0.22em] text-red-200/90 uppercase">
+                神桐の記録 · Journal Intime
+            </span>
+        </div>
+
+        <div class="flex items-center space-x-3 bg-black/70 backdrop-blur-md px-4 py-2 rounded-full border border-red-800/50 shadow-xl">
+            <button id="audioToggle" type="button" onclick="toggleMusic()" aria-label="Musique"
+                class="text-red-300 hover:text-amber-200 transition flex items-center justify-center focus:outline-none">
+                <svg id="iconPlay" class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clip-rule="evenodd"/>
+                </svg>
+                <svg id="iconPause" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zM7 8a1 1 0 012 0v4a1 1 0 11-2 0V8zm5 0a1 1 0 012 0v4a1 1 0 11-2 0V8z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+            <span class="font-cinzel text-[11px] tracking-wider text-red-300/80 uppercase hidden sm:inline">Volume</span>
+            <input id="volumeRange" type="range" min="0" max="1" step="0.01" value="0.6"
+                oninput="updateVolume(this.value)" class="w-20 md:w-28 accent-red-500 cursor-pointer">
+        </div>
+    </header>
+
+    <main class="flex-1 w-full max-w-5xl px-4 py-4 md:py-8 flex items-center justify-center z-20">
+
+        <!-- VUE : CARNET FERMÉ -->
+        <section id="closedBookView" class="w-full flex flex-col items-center justify-center py-6">
+            <div onclick="openJournal()" role="button" tabindex="0"
+                onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openJournal();}"
+                class="leather-cover group relative w-72 sm:w-80 md:w-96 h-[430px] sm:h-[470px] rounded-r-2xl rounded-l-md flex cursor-pointer transition-all duration-500 hover:-translate-y-2 hover:shadow-[0_30px_75px_rgba(164,22,26,0.35)]">
+
+                <div class="spine-binding w-7 sm:w-8 h-full rounded-l-md border-r border-amber-400/20 flex flex-col justify-between py-8 items-center">
+                    <span class="w-2 h-2 rounded-full bg-amber-400/50"></span>
+                    <span class="w-2 h-2 rounded-full bg-amber-400/50"></span>
+                    <span class="w-2 h-2 rounded-full bg-amber-400/50"></span>
+                </div>
+
+                <div class="flex-1 m-4 border border-amber-300/30 rounded-lg p-6 flex flex-col justify-between items-center text-center relative">
+                    <span class="w-3 h-3 border-t-2 border-l-2 border-amber-300/60 absolute top-2 left-2"></span>
+                    <span class="w-3 h-3 border-t-2 border-r-2 border-amber-300/60 absolute top-2 right-2"></span>
+                    <span class="w-3 h-3 border-b-2 border-l-2 border-amber-300/60 absolute bottom-2 left-2"></span>
+                    <span class="w-3 h-3 border-b-2 border-r-2 border-amber-300/60 absolute bottom-2 right-2"></span>
+
+                    <div class="pt-2">
+                        <p class="font-jp text-xs tracking-[0.35em] text-red-300/80 mb-2">十一歳より</p>
+                        <p class="font-cinzel text-[11px] tracking-[0.25em] text-amber-200/70 uppercase">Commencé à onze ans</p>
+                    </div>
+
+                    <div class="my-4 flex flex-col items-center">
+                        <div class="hanko-seal w-16 h-16 rounded-full flex items-center justify-center font-jp text-2xl font-bold text-amber-100 mb-5 transition-transform duration-500 group-hover:scale-110 group-hover:rotate-6">
+                            愛
+                        </div>
+                        <h1 class="font-cinzel text-2xl sm:text-3xl font-bold text-amber-100 tracking-wide leading-snug">
+                            Le journal de<br>
+                            <span class="text-red-400">Shinkiri Renjiro</span>
+                        </h1>
+                    </div>
+
+                    <div class="pb-1">
+                        <div class="w-16 h-[1px] bg-gradient-to-r from-transparent via-amber-300/60 to-transparent mx-auto mb-3"></div>
+                        <p class="font-cinzel text-xs tracking-[0.2em] text-red-200/90 uppercase group-hover:text-amber-200 transition">
+                            Ouvrir le carnet
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- VUE : CARNET OUVERT -->
+        <section id="openBookView" class="hidden w-full book-open-anim">
+            <div class="flex flex-wrap items-center justify-between gap-3 mb-4 px-1">
+                <div class="flex flex-wrap items-center gap-1.5 sm:gap-2" id="chapterTabs"></div>
+
+                <button type="button" onclick="closeJournal()"
+                    class="font-cinzel text-xs tracking-widest uppercase px-4 py-2 rounded-full bg-black/70 hover:bg-red-950/80 text-red-200 hover:text-amber-200 border border-red-800/60 transition">
+                    Fermer le carnet ✕
+                </button>
+            </div>
+
+            <div class="journal-book rounded-2xl relative overflow-hidden">
+                <div class="hidden lg:block center-crease absolute inset-y-0 left-1/2 -translate-x-1/2 w-10 pointer-events-none z-10"></div>
+
+                <div class="px-6 pt-7 pb-5 md:px-12 border-b border-red-900/40 flex flex-col md:flex-row md:items-end md:justify-between gap-2 relative z-20">
+                    <div>
+                        <p id="chapterSubtitle" class="font-jp text-xs tracking-[0.25em] text-red-400/85 uppercase mb-1"></p>
+                        <h2 id="chapterTitle" class="font-cinzel text-2xl md:text-4xl font-bold text-amber-100 tracking-wide"></h2>
+                    </div>
+                    <p id="pageIndicator" class="font-cinzel text-xs tracking-[0.2em] text-red-300/75 uppercase"></p>
+                </div>
+
+                <div id="chapterContent" class="journal-scroll page-turn-anim px-6 py-7 md:px-14 md:py-10 max-h-[62vh] overflow-y-auto relative z-20 space-y-5 text-lg md:text-[21px] leading-[1.85] text-amber-50/90">
+                </div>
+
+                <div class="px-6 py-4 md:px-12 bg-black/45 border-t border-red-900/40 flex items-center justify-between gap-4 relative z-20">
+                    <button id="prevBtn" type="button" onclick="prevChapter()"
+                        class="font-cinzel text-xs md:text-sm tracking-widest uppercase px-4 py-2 rounded-full border border-red-800/60 text-red-200 hover:bg-red-950/80 hover:text-amber-200 disabled:opacity-35 disabled:pointer-events-none transition">
+                        ← Page précédente
+                    </button>
+
+                    <span class="font-jp text-xs text-red-400/70 tracking-widest hidden sm:inline">黒羽 · 紅蓮の記憶</span>
+
+                    <button id="nextBtn" type="button" onclick="nextChapter()"
+                        class="font-cinzel text-xs md:text-sm tracking-widest uppercase px-4 py-2 rounded-full border border-red-800/60 text-red-200 hover:bg-red-950/80 hover:text-amber-200 disabled:opacity-35 disabled:pointer-events-none transition">
+                        Page suivante →
+                    </button>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer class="w-full py-3 px-4 text-center text-xs font-jp tracking-[0.2em] text-red-300/45 z-20">
+        Le journal de Shinkiri Renjiro — Un livre commencé à l'âge de onze ans..
+    </footer>
+
+    <!-- Audio Solo Leveling -->
+    <audio id="bgMusic" loop preload="auto">
+        <source src="https://files.catbox.moe/oc9nps.mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        const chapters = [
+            {
+                id: 0,
+                tab: "Chapitre 1",
+                kanji: "第一章 · 友を求める少年",
+                title: "1 — Le début d'un enfant qui souhaite se faire des amis..",
+                entries: [
+                    "Je suis devenu un Pourfendeur.. Enfin, pas encore vraiment, je suis encore un aspirant, mais je vais bientôt pouvoir le devenir !",
+                    "Aujourd'hui, j'ai rencontré plusieurs personnes. Il y avait Subaru, Hoshiko, Ito et d'autres personnes dont je ne me souviens pas encore très bien des noms. Ils ont l'air gentils, enfin, certains plus que d'autres. J'ai aussi rencontré une fille qui s'appelle Kuroha.",
+                    "Elle est assez étrange. Elle ne parle pas beaucoup et elle a souvent l'air de ne pas vouloir être là. Les autres ne sont pas très gentils avec elle non plus. Hoshiko m'a même dit de ne pas lui parler. Je ne sais pas pourquoi.. Peut-être qu'elle a fait quelque chose de mal ? Ou peut-être qu'ils ne l'aiment simplement pas.",
+                    "Je ne comprends pas vraiment. Même si elle est froide et qu'elle ne sourit pas beaucoup, elle a sûrement envie d'avoir des amis comme tout le monde. Maman m'a toujours dit qu'il fallait essayer de comprendre les autres avant de les juger. Alors je vais essayer de lui parler quand même.",
+                    "Je ne sais pas si elle voudra être mon amie, mais j'aimerais bien. Peut-être qu'un jour elle me sourira. Ce serait bien.",
+                    "Aujourd'hui, j'ai aussi pensé à maman.. Elle me manque beaucoup. Depuis qu'elle est partie, il y a des choses que je ne comprends plus vraiment. Je repense souvent à l'accident et je me demande encore si j'aurais pu faire quelque chose pour l'empêcher. Je crois que je me sentirai toujours un peu responsable..",
+                    "Avant de partir, elle m'avait dit que je devais trouver des amis, mais aussi une raison de vivre. Je ne sais pas encore exactement ce que ça veut dire. Peut-être que je finirai par comprendre en grandissant.",
+                    "Pour le moment, je veux simplement devenir un Pourfendeur et protéger les gens qui comptent pour moi.",
+                    "...",
+                    "La Sélection Finale est terminée !",
+                    "J'ai réussi.. Je suis vivant et je vais pouvoir continuer à avancer. J'ai eu peur, parfois vraiment très peur, mais je ne veux pas abandonner. Je veux devenir assez fort pour protéger les autres.",
+                    "Et surtout.. Je veux protéger Kuroha.",
+                    "Je ne sais pas pourquoi j'écris ça en particulier. Elle n'est pas forcément gentille avec moi et elle ne me montre pas vraiment qu'elle veut être mon amie. Pourtant, quand je la vois, je me dis que je ne voudrais pas qu'il lui arrive quelque chose. Je sais que c'est étrange, mais c'est comme ça.",
+                    "Elle aussi veut rejoindre le Souffle de la Brume. Alors je vais essayer d'y entrer avec elle. Peut-être qu'on pourra s'entraîner ensemble, faire des missions ensemble et, un jour, devenir de vrais amis.",
+                    "Je ne sais pas pourquoi, mais j'aimerais bien qu'elle soit encore là lorsque nous aurons grandi. J'aimerais pouvoir la voir réussir et lui montrer que moi aussi, je peux devenir quelqu'un de fort.",
+                    "Je veux être assez fort pour ne plus avoir à regarder quelqu'un disparaître sans rien pouvoir faire.",
+                    "...",
+                    "J'ai réussi le recrutement du Souffle de la Brume !",
+                    "Kuroha et Asmita étaient présents aussi. Je suis vraiment content d'avoir pu rejoindre cet ordre, même si je sais que je vais devoir travailler beaucoup plus dur maintenant. Ils sont tous les deux assez forts et je ne veux pas rester derrière eux.",
+                    "Je dois progresser. Je dois apprendre, m'entraîner et devenir meilleur.",
+                    "Je repense souvent à ce que maman m'avait dit. Trouver des amis.. Trouver une raison de vivre. Je crois que je commence à comprendre un peu. Peut-être que ma raison de vivre, ce sera de protéger les personnes que je rencontrerai sur mon chemin.",
+                    "Je ne veux plus perdre quelqu'un comme j'ai perdu maman.",
+                    "Et puis, j'aimerais bien voir Kuroha sourire un jour. Je me demande à quoi elle ressemble lorsqu'elle est heureuse. Je crois que ça doit être joli.",
+                    "...",
+                    "Je suis devenu Kanoto du Souffle de la Brume !",
+                    "Aujourd'hui, je suis revenu d'une mission avec Kuroha. Nous avons dû nous rendre dans la dimension de Hidan et, pendant un moment, elle est tombée.",
+                    "Je ne sais pas vraiment ce qui m'est arrivé à cet instant. Mon cœur s'est mis à me faire mal, vraiment mal, comme si quelque chose venait de se briser à l'intérieur de moi. Je ne comprenais pas pourquoi je ressentais ça aussi fort.",
+                    "J'ai pourtant l'habitude de voir des personnes se faire blesser pendant les missions, mais lorsque c'est elle.. C'est différent.",
+                    "Quand je l'ai vue tomber, j'ai eu peur. Une peur que je ne connaissais pas vraiment. J'avais l'impression que quelque chose de terrible allait arriver si je ne faisais rien. Je voulais simplement qu'elle se relève, qu'elle aille bien et que nous puissions rentrer ensemble.",
+                    "Elle est parfois froide, elle me parle peu et je ne sais jamais vraiment ce qu'elle pense de moi. Pourtant, je n'ai pas envie qu'elle disparaisse.",
+                    "Je crois que je vais continuer à la protéger. Même si elle ne me le demande pas, même si elle ne comprend pas pourquoi je fais ça.",
+                    "Je ne sais pas encore ce que je ressens exactement. Je suis peut-être simplement attaché à elle parce que nous avons commencé à avancer ensemble.",
+                    "Mais je sais une chose : je ne veux pas qu'il lui arrive du mal."
+                ]
+            },
+            {
+                id: 1,
+                tab: "Chapitre 2",
+                kanji: "第二章 · 時の流れ",
+                title: "2 — Quelques temps plus tard..",
+                entries: [
+                    "Cela fait maintenant quelque temps que je suis dans l'Ordre. J'ai effectué plusieurs missions avec les autres membres du Souffle de la Brume et je commence à mieux comprendre ce que signifie être un Pourfendeur.",
+                    "Mais les choses changent.",
+                    "Subaru et Hoshiko ont quitté le QG pour rejoindre leur père, le Pilier du Vent. Je suis content pour eux, évidemment, mais je dois avouer que leur départ m'a fait quelque chose. Nous avions commencé à nous habituer les uns aux autres et, maintenant, ils ne sont plus vraiment là.",
+                    "Je me retrouve un peu seul.",
+                    "Heureusement, j'ai rencontré Zetsu et Ichibe. Ils sont devenus des personnes avec qui je peux parler et avancer. J'ai également fait la rencontre d'Akaezan, un Kinoe du Souffle de la Brume.",
+                    "Lui, il est vraiment impressionnant.",
+                    "Il me rappelle un peu mon père. Sa manière de se comporter, sa force, sa façon de parler.. Je ne sais pas comment l'expliquer, mais j'ai l'impression de retrouver quelque chose que j'avais perdu depuis longtemps.",
+                    "J'aimerais beaucoup qu'il devienne mon mentor. Je veux apprendre auprès de lui, devenir aussi fort que possible et pouvoir protéger mes amis. Je veux être capable de tenir debout même lorsque tout le monde autour de moi commence à tomber.",
+                    "Mais il y a aussi une autre chose que je commence à comprendre.",
+                    "Les démons ne font preuve d'aucune pitié. Ils n'hésitent pas à tuer, à détruire et à utiliser les autres pour parvenir à leurs fins. Alors pourquoi devrions-nous toujours nous montrer différents ? J'avais promised de leur ressembler sur certains points, de ne plus hésiter et de ne plus faire preuve de clémence.",
+                    "Peut-être que si je deviens aussi froid qu me devienne aussi froid qu'eux, je pourrai enfin les détruire.",
+                    "Je ne sais pas si c'est la bonne manière de penser, mais je ne veux plus être faible.",
+                    "...",
+                    "Je suis devenu Tsuchinoto.",
+                    "Je pensais qu'en montant en grade, je me sentirais différent. Que je serais plus heureux, plus fier de moi.. Mais ce n'est pas vraiment le cas.",
+                    "Je veux changer certaines choses dans l'Ordre. Je veux que les Pourfendeurs comprennent que nous ne pouvons pas continuer à avancer comme si tout allait bien. Les démons sont dangereux et nous devons devenir meilleurs.",
+                    "Aujourd'hui, j'ai dû affronter Ban Raijinshi. Il avait trahi l'Ordre et était devenu un démon de l'Obscurité. Je l'ai tué.",
+                    "Je ne sais pas si je devrais ressentir quelque chose de particulier après ça. Je pensais que cela me ferait du bien, que j'aurais l'impression d'avoir accompli quelque chose d'important. Pourtant, je ressens toujours ce vide.",
+                    "Les choses ne s'arrangent pas vraiment. Des amis s'en vont, d'autres disparaissent et Kuroha aussi finit par s'éloigner. J'ai l'impression que tout le monde trouve un chemin différent du mien.",
+                    "Je ne sais plus vraiment où je dois aller.",
+                    "Je voudrais simplement retrouver cette époque où je pensais que devenir un Pourfendeur suffirait à rendre les choses meilleures. Celle où je pouvais encore espérer retrouver les mêmes personnes en rentrant au QG.",
+                    "Je me demande parfois ce que devient Kuroha. Je ne sais pas si elle pense encore à moi, ni si elle se souvient de nos premiers moments au sein de l'Ordre.",
+                    "C'est étrange.. Même lorsque nous ne sommes pas ensemble, elle me traverse parfois l'esprit sans raison.",
+                    "...",
+                    "J'ai rencontré une démone aujourd'hui.",
+                    "Elle se fait appeler la Divine Virtuose. J'ai appris qu'elle était la Lune Supérieure Une. Je ne sais pas exactement comment décrire cette rencontre. Elle m'a parlé de beaucoup de choses, notamment de ce qu'elle appelle les « heures sombres ».",
+                    "Elle m'a aussi parlé de l'effroi.",
+                    "D'après ce que j'ai compris, il s'agirait d'une sorte de symbiose entre les ténèbres et la glace. Je ne comprends pas encore tout, mais cette capacité m'intrigue énormément.",
+                    "Il y avait également une pièce d'échecs. Je ne sais pas pourquoi, mais j'ai immédiatement pensé à Kuroha en la voyant. Elle aime les échecs, alors je me suis dit que ce serait bien de la récupérer pour la lui offrir.",
+                    "Je ne sais même pas si elle l'accepterait, mais j'aimerais bien lui faire plaisir.",
+                    "C'est étrange comme certaines choses peuvent me faire penser à elle sans que je le décide. Je peux voir un objet, entendre une parole ou simplement passer dans un endroit, et me demander ce qu'elle en penserait.",
+                    "Je crois que je n'ai jamais vraiment cessé de penser à elle.",
+                    "Enfin.. Il faut aussi que je garde en tête mes objectifs. Je dois récupérer cette pièce et continuer à éliminer les démons. Je ne peux pas oublier pourquoi je suis devenu Pourfendeur.",
+                    "...",
+                    "Akaezan est mort.",
+                    "Je n'ai même pas eu le temps de lui écrire tout ce que je voulais lui dire. Je pensais avoir encore du temps pour progresser auprès de lui, pour lui montrer que je pouvais devenir un bon Pourfendeur.",
+                    "Mais maintenant, il n'est plus là.",
+                    "Je voulais le remercier. Lui dire qu'il m'avait aidé à avancer, qu'il m'avait donné envie de devenir meilleur et qu'il représentait beaucoup pour moi. Je ne sais pas si j'aurais réussi à lui dire tout ça directement, mais j'aurais au moins voulu essayer.",
+                    "Il me rappelait mon père.. Et maintenant, je le perds lui aussi.",
+                    "Je commence à comprendre que les personnes qui nous aident à avancer ne restent pas toujours à nos côtés. Pourtant, je refuse de laisser leur souvenir disparaître.",
+                    "Je continuerai d'avancer comme un Pourfendeur du Souffle de la Brume. Je deviendrai plus fort, comme Akaezan l'aurait voulu.. Et comme maman me l'avait demandé.",
+                    "Il me reste Zetsu et Ichibe. Je dois faire attention à eux. Je ne veux pas les perdre à leur tour.",
+                    "...",
+                    "Les conflits entre les Lunes Supérieures et les Piliers deviennent de plus en plus importants. L'Ordre traverse une période difficile et je commence à comprendre que les choses ne seront jamais aussi simples que je l'espérais lorsque j'étais enfant.",
+                    "Je suis devenu Hinoto du Souffle de la Brume.",
+                    "Je veux que l'Ordre ouvre les yeux. Je veux que nous arrêtions de prétendre que tout va bien lorsque nous perdons des camarades à chaque affrontement. Il faut que quelqu'un fasse quelque chose.",
+                    "Je ressens encore ce vide, mais Val m'aide à avancer. Je ne sais pas toujours comment exprimer ce que je ressens, pourtant sa présence et ses paroles me permettent parfois de retrouver un peu de stabilité. Il essaie de m'aider à continuer malgré ce que je traverse, et je lui en suis reconnaissant.",
+                    "Je voudrais réussir à faire changer les choses.",
+                    "...",
+                    "Nous avons prévu quelque chose avec Zetsu, Ichibe et Kosei.",
+                    "Nous allons affronter trois démons. Je sais que ce sera dangereux, mais je veux croire que nous pouvons réussir. Nous avons tous les quatre envie de changer l'Ordre, de faire évoluer les choses et de montrer que les Pourfendeurs peuvent encore reprendre le dessus.",
+                    "Je ne veux plus rester spectateur.",
+                    "Je veux prouver que nous pouvons faire basculer l'équilibre. Que nous ne sommes pas condamnés à toujours subir les événements.",
+                    "Je sais que je dois être prêt à tout. Je sais aussi que je risque de ne pas revenir.",
+                    "Mais je préfère prendre ce risque plutôt que de rester les bras croisés.",
+                    "J'espère simplement que cette fois, nous rentrerons tous ensemble.",
+                    "J'aimerais pouvoir continuer à écrire dans ce livre. J'aimerais pouvoir raconter un jour que nous avons réussi, que nous avons changé les choses et que les personnes que j'aime sont encore à mes côtés.",
+                    "J'espère que cette fois, je n'aurai pas à écrire de nouveaux noms parmi les disparus."
+                ]
+            },
+            {
+                id: 2,
+                tab: "Chapitre 3",
+                kanji: "第三章 · 喪失と虚無",
+                title: "3 — La Perte.. Le vide.. Et la mort..",
+                entries: [
+                    "Ils sont morts.",
+                    "Tous.",
+                    "Zetsu.. Ichibe.. Kosei..",
+                    "Je ne sais même pas comment commencer cette page. J'ai essayé d'écrire plusieurs fois, mais je n'arrive pas à aligner mes pensées. Je pensais que nous pouvions réussir, je pensais que nous étions assez forts pour faire changer les choses.",
+                    "J'avais tort.",
+                    "Je les ai perdus. J'ai encore une fois regardé des personnes importantes pour moi disparaître sans pouvoir les protéger. Tout ce que je voulais éviter depuis mon enfance est arrivé une nouvelle fois.",
+                    "Je suis faible.",
+                    "Je n'ai pas été capable de les sauver. Je leur avais pourtant dit que nous pouvions y arriver, que nous pouvions changer l'Ordre et faire basculer la situation. Mais à quoi bon toutes ces paroles si je n'ai même pas réussi à les garder en vie ?",
+                    "J'ai demandé à Tezuka de me tuer.",
+                    "Il a refusé.",
+                    "Je ne comprends pas pourquoi. Je ne sais pas ce qu'il attend de moi. Je n'ai plus envie de continuer comme ça. Chaque respiration me fait mal, chaque mouvement me rappelle ce que j'ai perdu et chaque silence me ramène à eux.",
+                    "Je suis seul.",
+                    "Je n'ai plus Zetsu, je n'ai plus Ichibe, je n'ai plus Kosei.. Je n'ai même plus la certitude de savoir pourquoi je continue à me battre.",
+                    "Maman.. J'aimerais tellement que tu sois là.",
+                    "J'aimerais que tu me dises quoi faire. Que tu me prennes dans tes bras comme avant et que tu me dises que tout va s'arranger. Mais tu n'es plus là non plus.",
+                    "Je n'arrive plus à respirer correctement. J'ai l'impression d'avoir quelque chose qui m'écrase la poitrine. Je voudrais simplement que tout s'arrête.",
+                    "Pourquoi est-ce que je n'ai jamais réussi à protéger ceux que j'aime ?",
+                    "Pourquoi est-ce que je suis encore là alors qu'eux ne le sont plus ?",
+                    "Je repense à toutes ces fois où je leur ai dit que je deviendrais plus fort. À toutes ces promesses que je leur ai faites sans savoir si j'aurais réellement la force de les tenir.",
+                    "Je n'ai pas réussi.",
+                    "Je ne sais plus quoi faire, maman..",
+                    "Je ne sais même plus pourquoi je devrais continuer à vivre."
+                ]
+            },
+            {
+                id: 3,
+                tab: "Chapitre 4",
+                kanji: "第四章 · 悲劇のあとで",
+                title: "4 — Quelques heures après le drame..",
+                entries: [
+                    "Je suis au domaine de l'Insecte.",
+                    "Val est avec moi. Il essaie de m'aider, même si je ne suis pas certain de pouvoir être aidé. Je ne parle pas beaucoup. Je n'ai pas vraiment envie de raconter ce qui s'est passé, car je sais que je vais devoir repenser à tout ce que j'ai perdu.",
+                    "Puis, nous avons entendu quelque chose.",
+                    "Des paroles.. Des murmures que je n'arrivais pas à comprendre. Nous avons fini par nous diriger vers la sortie du QG et c'est là que nous l'avons aperçue.",
+                    "La Divine Virtuose.",
+                    "Nous avons décidé de la suivre.",
+                    "Je ne sais pas exactement ce que je cherche en faisant ça. Je ressens toujours cette douleur, ce vide qui ne semble jamais vouloir partir. Pourtant, je continue d'avancer, comme si quelque chose m'empêchait de m'arrêter complètement.",
+                    "Durant cette rencontre, elle m'a parlé de devenir un Hebi.. Une vipère. Elle a également évoqué la possibilité de devenir un Pilier pour Val.",
+                    "J'ai entendu plusieurs objectifs : récupérer la pièce d'échecs, retrouver la lame de l'Insecte.. Beaucoup de choses.",
+                    "Je ne suis pas certain d'avoir tout compris.",
+                    "Nous avons perdu des amis, des camarades, des frères d'armes. Et maintenant, il faudrait encore trouver la force de recommencer ? De se battre pour un nouvel objectif ? De prendre un autre chemin ?",
+                    "Je crois qu'au fond, je sais que je dois choisir ce que je veux devenir. Peut-être que devenir un Hebi m'aiderait à avancer. Peut-être que je dois devenir plus mauvais, plus froid, ne plus avoir de pitié et imposer la mort à ceux qui menacent l'humanité.",
+                    "Je ne sais pas si c'est la bonne solution.",
+                    "Mais je ne veux plus être l'enfant qui regarde les autres mourir.",
+                    "...",
+                    "Je suis devenu Hinoe.",
+                    "Cette promotion aurait probablement dû me rendre heureux, mais je n'arrive pas à ressentir de la fierté. Zetsu aurait dû être là. J'aurais aimé qu'il puisse voir que je continue à avancer, que je ne me suis pas complètement arrêté après sa mort.",
+                    "C'est étrange de monter en grade lorsque ceux avec qui l'on voulait progresser ne sont plus là.",
+                    "Et puis.. Kuroha est revenue.",
+                    "Elle est toujours aussi froide, parfois même méchante. Je ne sais pas vraiment comment me comporter avec elle. J'ai l'impression que rien n'a changé de son côté, alors que moi, je ne suis plus la même personne.",
+                    "Pourtant, sa présence me fait quelque chose. Je ne saurais pas l'expliquer. Il suffit parfois de la voir passer pour que mon esprit se détourne un instant de tout ce qui me fait souffrir.",
+                    "Je me demande si elle va bien. Si elle a changé depuis la dernière fois que nous nous sommes vus. Si elle a trouvé des personnes sur qui compter.",
+                    "Je me demande aussi si elle pourrait un jour me comprendre.",
+                    "Je me demande parfois si quelqu'un pourrait réellement m'aider. Si quelqu'un pourrait comprendre ce que je ressens sans que j'aie besoin de tout expliquer.",
+                    "Je pense parfois à mettre fin à tout ça.",
+                    "Je ne sais plus si devenir un Hebi est une bonne idée. Je ne sais pas si je veux réellement devenir quelqu'un de mauvais ou si je cherche simplement un moyen de ne plus souffrir.",
+                    "...",
+                    "Aujourd'hui, je suis allé au Mont Natagumo avec Kuroha.",
+                    "Nous avons passé un moment près d'un feu de camp. C'était plutôt calme, malgré tout ce qui se passe autour de nous. Je devais lui donner une lettre, mais je ne l'ai pas fait.",
+                    "Je lui ai dit que je l'avais oubliée.",
+                    "En réalité, je crois que je voulais surtout provoquer quelque chose. Je voulais qu'elle comprenne un peu ce que je ressentais, même si je n'étais moi-même pas capable de mettre des mots dessus. Cette douleur dans ma poitrine.. Cette impression d'attendre quelque chose sans savoir exactement quoi.",
+                    "Je ne sais pas pourquoi je réagis ainsi avec elle.",
+                    "Quand elle est là, je me sens différent. Les souvenirs qui me poursuivent semblent parfois s'éloigner. Je ne les oublie pas, mais ils font moins de bruit. Je peux simplement être à côté d'elle, écouter ce qu'elle dit ou regarder le feu avec elle, et pendant quelques instants, je n'ai plus besoin de lutter contre tout ce qui se passe dans ma tête.",
+                    "Sa présence m'aide pourtant à tenir debout. Elle ne s'en rend probablement pas compte, mais certains moments passés à ses côtés me font oublier, ne serait-ce que quelques instants, tout ce que j'ai perdu.",
+                    "C'est étrange.",
+                    "...",
+                    "Je crois que je commence à la trouver belle.",
+                    "Enfin.. Elle l'a toujours été, mais je commence à le remarquer autrement. Je ne sais pas comment expliquer ça sans avoir l'air ridicule.",
+                    "Kuroha est magnifique. Elle a quelque chose que je ne retrouve chez personne d'autre. Même lorsqu'elle ne dit rien, même lorsqu'elle garde cette expression froide, je pourrais rester longtemps à la regarder.",
+                    "Je remarque des détails que je ne regardais pas auparavant. Sa manière de parler, ses réactions, ses expressions lorsqu'elle est contrariée.. Même ses silences finissent par me manquer lorsque je ne suis pas avec elle.",
+                    "Je crois que je pourrais reconnaître sa présence parmi des dizaines de personnes.",
+                    "C'est peut-être idiot d'écrire tout ça, mais je n'arrive pas à m'en empêcher.",
+                    "Je crois qu'elle est devenue la personne que je préfère.",
+                    "Mais est-ce que je devrais lui dire ?",
+                    "Je ne sais pas si elle ressent quelque chose de similaire. Elle est tellement difficile à comprendre que j'ai peur de me tromper. Peut-être que je m'attache trop vite. Peut-être que je confonds simplement le fait de me sentir bien auprès d'elle avec autre chose.",
+                    "Je n'ai pas envie de la perdre.",
+                    "...",
+                    "J'ai reçu un corbeau de Kuroha.",
+                    "Elle souhaite me voir.",
+                    "Je vais donc aller la rejoindre. Je ne sais pas vraiment de quoi nous allons parler, mais je suis content qu'elle ait pris l'initiative de m'envoyer un message.",
+                    "Je crois que j'ai relu son message plusieurs fois avant de partir. C'est ridicule, je sais.. Mais ça m'a fait plaisir.",
+                    "J'espère simplement que tout se passera bien.",
+                    "...",
+                    "Je suis devenu Kinoto.",
+                    "Je crois que j'aurais aimé qu'Akaezan et Zetsu soient là pour voir ça. J'ai atteint un rang qui me rapproche un peu plus de ce que je voulais devenir. Akaezan était Kinoto, et Zetsu aurait probablement fini par atteindre ce rang lui aussi.",
+                    "Je ne suis pas eux. Je ne serai jamais exactement comme eux, mais je veux continuer à avancer en gardant une partie de ce qu'ils m'ont appris.",
+                    "Je dois protéger Kuroha.",
+                    "Je crois que je commence enfin à comprendre pourquoi sa présence compte autant pour moi. Ce n'est plus seulement parce que je veux qu'elle reste en vie, ni simplement parce que j'ai peur de perdre une personne supplémentaire.",
+                    "C'est parce que je veux qu'elle soit heureuse.",
+                    "Je veux la voir sourire, même si ce sourire n'est pas pour moi. Je veux qu'elle puisse réaliser ses objectifs, qu'elle puisse devenir la personne qu'elle souhaite être et qu'elle n'ait jamais à se sentir seule. Je veux être là lorsqu'elle aura besoin de quelqu'un, mais aussi lorsqu'elle n'aura besoin de rien d'autre que de profiter d'un moment tranquille.",
+                    "Même si elle ne comprend pas toujours pourquoi je fais autant d'efforts, même si elle ne me le demande pas, je veux rester auprès d'elle.",
+                    "Elle m'a aidé à me relever sans même le savoir. Elle m'a permis de retrouver un peu de lumière dans une période où je pensais ne plus jamais pouvoir sourire.",
+                    "Je suis encore perdu, mais je crois que je sais au moins une chose : je tiens énormément à elle.",
+                    "Et peut-être que je suis déjà beaucoup plus attaché que je ne veux bien l'admettre.",
+                    "...",
+                    "J'aurais dû lui dire.",
+                    "J'ai encore eu l'occasion de lui avouer ce que je ressens, mais je n'ai pas réussi. J'ai eu peur. Peur de sa réaction, peur de la réponse, peur que tout change entre nous.",
+                    "C'est stupide, je sais.",
+                    "Je voudrais pourtant qu'elle comprenne que je ne la considère plus simplement comme une amie. J'aimerais lui montrer qu'elle compte énormément pour moi, mais je n'arrive jamais à trouver le bon moment.",
+                    "Je crois que je commence à avoir peur de tout ce qui pourrait nous éloigner. Un regard différent, une parole mal comprise, une décision.. Je ne veux pas que tout ce que nous avons construit disparaisse à cause de quelques mots.",
+                    "Je voudrais aussi la voir progresser. Je veux qu'elle devienne Hinoto du Souffle de la Brume. Je sais qu'elle en est capable.",
+                    "Lorsqu'elle a failli être tuée par des démons, j'ai eu terriblement peur. Je me suis rendu compte que je ne supporterais pas de la perdre elle aussi. Pas après tout ce qui s'est passé.",
+                    "Je ne veux plus revivre ça.",
+                    "Mais je crois surtout que je ne supporterais pas de la perdre, elle.",
+                    "...",
+                    "Je lui ai avoué mes sentiments.",
+                    "Enfin.. Je l'ai fait.",
+                    "Je ne sais pas si j'ai choisi le meilleur moment, ni si j'ai trouvé les bons mots, mais je lui ai dit ce que j'avais sur le cœur. Je lui ai expliqué ce que je ressentais, ce que sa présence représentait pour moi et pourquoi je voulais autant rester à ses côtés.",
+                    "J'ai essayé de lui faire comprendre qu'elle n'était pas une personne parmi tant d'autres. Qu'elle était devenue quelqu'un d'unique à mes yeux. Quelqu'un dont je voulais connaître les journées, les pensées, les peines et les joies. Quelqu'un avec qui j'aurais aimé partager bien plus que quelques missions.",
+                    "Je voulais qu'elle sache que mes sentiments étaient sincères.",
+                    "Nous sommes ensuite allés voir son père.",
+                    "Et malgré tout ce que je lui ai confié, elle a choisi son père.",
+                    "Je crois que c'est l'une des premières fois où je me suis senti aussi démuni face à une décision. Je ne sais pas vraiment ce qu'elle ressent pour moi. Je ne sais pas si elle m'aime, si elle hésite ou si je me suis simplement fait des idées.",
+                    "J'ai peur qu'elle ne m'aime pas.",
+                    "Nous sommes également allés sur la tombe de sa mère. C'est là que j'ai essayé de lui dire tout ce que je gardais en moi. Je voulais qu'elle comprenne, qu'elle sache à quel point elle compte pour moi.",
+                    "Je voulais lui donner une place dans ma vie que je n'avais jamais imaginé pouvoir offrir à quelqu'un. Je voulais qu'elle sache que, même si je n'avais pas toujours les bons mots, je ne jouais pas avec ce que je ressentais.",
+                    "Mais elle a choisi son père.",
+                    "Je ne lui en veux pas. Enfin.. J'essaie de ne pas lui en vouloir. Je sais que sa famille compte énormément pour elle et je ne veux pas être celui qui lui demande de faire un choix qu'elle ne souhaite pas faire.",
+                    "J'ai simplement eu mal.",
+                    "Je suis parti prendre l'air. J'avais besoin de m'éloigner un peu, de réfléchir à tout ça sans avoir à faire semblant que tout allait bien.",
+                    "Je ne sais pas ce que je dois faire maintenant. Je ne sais pas si je dois attendre, si je dois avancer ou si je dois simplement accepter que mes sentiments ne seront peut-être jamais partagés.",
+                    "Mais je sais que je l'aime.",
+                    "Et même si elle ne le comprend pas encore, je crois que je continuerai à l'aimer.",
+                    "Est-ce qu'elle ne m'aime pas ?",
+                    "Je ne sais pas."
+                ]
+            },
+            {
+                id: 4,
+                tab: "Chapitre 5",
+                kanji: "第五章 · 寄り添う日々",
+                title: "5 — Des mois plus tard..",
+                entries: [
+                    "Les mois passent et je continue d'avancer.",
+                    "Kuroha ne comprend pas encore vraiment ce qu'elle ressent. Du moins, c'est ce que j'ai parfois l'impression de constater. Elle ne sait pas toujours comment exprimer ses sentiments et je ne veux pas la brusquer.",
+                    "Je l'aime, c'est tout.",
+                    "Je pourrais passer des heures à essayer de lui expliquer ce que je ressens, mais je crois que je n'arriverais jamais à trouver des mots assez grands. Ce que je ressens pour elle ne se limite plus à quelques pensées, à quelques sourires ou à cette envie de la voir chaque jour.",
+                    "Je veux partager ma vie avec elle.",
+                    "Je veux connaître les journées où elle sera heureuse, mais aussi celles où elle n'aura envie de parler à personne. Je veux pouvoir la retrouver après une longue mission, lui demander comment s'est passée sa journée et écouter ses histoires, même les plus insignifiantes. Je veux connaître ses habitudes, ses préférences, ses petites manies et toutes ces choses que l'on ne remarque qu'en vivant longtemps auprès de quelqu'un.",
+                    "Je veux simplement être celui auprès de qui elle pourra être elle-même.",
+                    "J'aimerais lui apprendre certaines choses, l'aider à progresser, lui transmettre ce que je sais. Ce n'est pas toujours facile, mais je veux faire de mon mieux.",
+                    "Nous avons également changé de préfecture. J'aime bien ces nouveaux endroits. Il y a tant de lieux où je pourrais marcher avec elle, tant d'endroits où nous pourrions nous arrêter pour parler et où je pourrais enfin lui dire tout ce que je ressens sans avoir peur de ma propre voix.",
+                    "Parfois, je m'imagine simplement marcher à côté d'elle, sans avoir de mission à accomplir, sans avoir à surveiller les alentours, sans devoir penser aux démons ou aux conflits. Juste nous deux.",
+                    "Je crois que je voudrais pouvoir vivre davantage de ces moments.",
+                    "Les problèmes liés à Ryomen sont revenus eux aussi.",
+                    "Nous grandissons, nous changeons, et Kuroha devient encore plus belle à mesure que le temps passe. Je l'aime toujours autant.. Peut-être même davantage. J'espère simplement qu'elle commence doucement à comprendre ce que je ressens.",
+                    "Je ne veux pas seulement qu'elle sache que je l'aime. Je veux qu'elle puisse le ressentir chaque fois que je suis auprès d'elle.",
+                    "...",
+                    "Hidan m'a gravement blessé.",
+                    "Je ne sais pas combien de temps je vais mettre à m'en remettre, mais j'ai envoyé un corbeau à Kuroha pour lui demander de venir me rejoindre à la cabane.",
+                    "J'avais besoin de la voir.",
+                    "Même lorsque je souffre, même lorsque je n'arrive plus à bouger correctement, je pense à elle. C'est devenu presque naturel. Quand quelque chose m'arrive, la première personne à laquelle je pense est souvent Kuroha.",
+                    "J'aimerais pouvoir lui dire que tout va bien, mais ce serait mentir.",
+                    "Je voudrais simplement qu'elle soit là. Pas pour me soigner, pas pour me rassurer à tout prix.. Juste pour que je puisse la voir et savoir qu'elle va bien.",
+                    "Je crois que je pourrais supporter beaucoup de choses tant que je sais qu'elle est encore quelque part, en sécurité.",
+                    "J'espère qu'elle viendra.",
+                    "...",
+                    "Une autre chose est arrivée.",
+                    "Une entité s'en est prise à Kuroha et l'a étranglée pour me mettre à l'épreuve. Je ne sais pas exactement ce qu'elle cherchait à provoquer, mais je sais une chose : je ne laisserai pas passer ça.",
+                    "Je vais la retrouver.",
+                    "Je ne peux pas accepter que quelqu'un puisse s'en prendre à elle simplement pour observer ma réaction. Kuroha n'est pas un objet, ni un moyen de tester mes limites. C'est la femme que j'aime, une personne qui mérite de vivre sans avoir à subir les conséquences des jeux de quelqu'un d'autre.",
+                    "Rien que d'imaginer ce qui aurait pu lui arriver me donne envie de tout détruire sur mon passage.",
+                    "Elle m'aide, elle m'apprend des choses et elle m'accompagne malgré toutes les difficultés que nous rencontrons.",
+                    "Je l'aime profondément.",
+                    "Et pourtant, je reste parfois incapable de lui dire tout ce que j'ai dans le cœur. Je continue d'avancer, j'essaie de lui montrer mes sentiments à ma manière et j'espère qu'un jour elle comprendra tout ce que je n'arrive pas encore à exprimer.",
+                    "Je voudrais qu'elle ne doute jamais de sa place dans ma vie.",
+                    "Elle est devenue bien trop importante pour moi.",
+                    "...",
+                    "Ça y est..",
+                    "Elle m'a enfin parlé.",
+                    "Elle m'aime aussi.. Enfin, elle commence à le comprendre, à sa manière. Elle ne sait pas toujours comment exprimer ce qu'elle ressent, et je ne crois pas qu'elle me fera un jour de grands discours comme ceux que l'on peut lire dans les livres.. Mais ce n'est pas grave.",
+                    "Je sais maintenant que ce que je ressens n'est pas à sens unique.",
+                    "Elle aussi m'aime.",
+                    "Je viens de relire ce que je viens d'écrire et j'ai encore du mal à y croire. Depuis combien de temps est-ce que j'attendais de pouvoir écrire ces quelques mots ? Depuis combien de temps est-ce que j'espérais qu'un jour, elle me regarde autrement ?",
+                    "Je crois que je n'ai jamais été aussi heureux de toute ma vie.",
+                    "Je dois vraiment la protéger, cette femme.. Elle est si particulière, si merveilleuse, parfois même un peu mystérieuse. J'aimerais qu'un jour elle devienne ma femme. Pas simplement celle que j'aime, mais celle avec qui je pourrai continuer à vivre, à grandir et à construire quelque chose qui nous appartient.",
+                    "Je veux qu'elle soit la première personne que je retrouve en rentrant chez moi. Je veux pouvoir lui raconter mes journées, entendre les siennes et partager avec elle toutes ces choses que je n'ai jamais su partager avec quelqu'un d'autre.",
+                    "Je veux qu'un jour, lorsque nous regarderons derrière nous, elle puisse se dire qu'elle a bien fait de me laisser entrer dans sa vie.",
+                    "Je veux être son mari.",
+                    "Je veux être celui qui l'attend, celui qui lui tient la main, celui qui connaît ses habitudes et qui remarque lorsqu'elle ne va pas bien. Je veux être celui qui sait quand elle a besoin de parler et celui qui comprend lorsqu'elle préfère simplement rester en silence.",
+                    "Je ne veux pas seulement l'aimer aujourd'hui.",
+                    "Je veux l'aimer dans dix ans, dans vingt ans et encore bien après.",
+                    "...",
+                    "Elle m'a fait un bisou sur la joue.",
+                    "Oui.. Un bisou sur la joue !",
+                    "Je crois que je n'ai jamais été aussi heureux pour quelque chose d'aussi simple. C'est bon, j'ai trouvé la bonne.. Maman, j'ai réussi. C'est elle. C'est vraiment elle que j'aime.",
+                    "J'ai encore le sourire rien qu'en repensant à ce moment. Elle ne se rend peut-être pas compte de ce qu'un geste aussi petit peut provoquer chez moi, mais je crois que je pourrais m'en souvenir pendant des années.",
+                    "Je l'aime tellement que je ne sais même plus comment l'expliquer.",
+                    "Maman, tu te souviens lorsque tu me disais que je devais trouver des amis et une raison de vivre ? Je crois que j'ai trouvé bien plus que ce que tu imaginais. J'ai trouvé une personne auprès de qui je veux construire mon avenir. Une personne que je voudrais voir à mes côtés lorsque tout ira bien, mais aussi lorsque tout ira mal.",
+                    "Je crois que je l'aime plus que je n'ai jamais aimé qui que ce soit.. Et j'espère seulement qu'un jour, elle comprendra à quel point cet amour est grand.",
+                    "J'ai passé tant de nuits auprès d'elle, tant de journées à ses côtés.. Sans même m'en rendre compte, elle est devenue bien plus que ma moitié. Elle est devenue une partie de mon existence. Une partie de moi que je ne peux plus imaginer absente.",
+                    "Je ne veux pas simplement être heureux avec elle. Je veux aussi être capable de la rendre heureuse. Je veux lui apporter la tendresse qu'elle mérite, la tranquillité qu'elle mérite et cette certitude qu'elle n'a pas besoin de tout porter toute seule.",
+                    "Je voudrais pouvoir lui offrir un monde où elle n'aurait plus à avoir peur de perdre les personnes qu'elle aime.",
+                    "Je voudrais être son endroit sûr.",
+                    "Bon.. J'ai encore parfois ces visions. Celles où je la vois mourir devant moi, celles où Elene me l'arrache sans que je puisse faire quoi que ce soit.. Elles reviennent de temps en temps et me rappellent que je peux encore la perdre.",
+                    "Mais ça ira.",
+                    "Je dois avancer, malgré tout. Je ne peux pas laisser ces images décider de notre avenir. Je ne veux pas que ma peur de la perdre finisse par nous empêcher de vivre ce que nous avons devant nous.",
+                    "Je veux profiter de chaque jour avec elle.",
+                    "Je veux que nous ayons des souvenirs bien plus nombreux que mes cauchemars.",
+                    "...",
+                    "Encore une soirée avec elle..",
+                    "Elle était magnifique, comme toujours. À un moment, elle a posé sa tête sur mon épaule.",
+                    "Je crois que je pourrais rester des heures comme ça, sans parler, sans même bouger, simplement avec elle contre moi. Je me suis même demandé si elle pouvait entendre les battements de mon cœur. Il devait certainement battre beaucoup trop vite.",
+                    "Je n'avais besoin de rien d'autre à cet instant.",
+                    "Je ne voulais pas que la soirée se termine. J'aurais aimé que le temps ralentisse, que les minutes s'étirent et que nous puissions rester ainsi jusqu'au matin.",
+                    "Elle est ensuite retournée au domaine des Iesada et n'est pas venue avec moi.. Ce n'est pas grave. Je ne lui en veux pas. Je suis déjà heureux d'avoir pu passer ce moment à ses côtés.",
+                    "Je crois que je commence à apprécier ces petits instants plus que tout le reste. Il n'y a pas forcément besoin de grandes déclarations ou de moments extraordinaires. Parfois, il suffit simplement qu'elle soit là.",
+                    "Et lorsque je ferme les yeux, je peux encore sentir sa tête contre mon épaule.",
+                    "Merci d'être là, Kuroha..",
+                    "Merci pour ces soirées, pour ces journées, pour ces petits gestes que tu ne remarques peut-être même pas.. Merci pour tes paroles, pour tes silences et pour tous ces moments où tu me fais oublier le reste du monde.",
+                    "Merci d'être devenue cette personne que j'attends de retrouver chaque fois que je rentre.",
+                    "Merci d'avoir accepté de m'aimer, même si tu ne sais pas toujours comment le montrer.",
+                    "Merci de me laisser une place auprès de toi.",
+                    "Merci, merci, merci..",
+                    "Je t'aime, Kuroha.",
+                    "Je t'aime tellement.",
+                    "...",
+                    "Ah ! J'allais oublier..",
+                    "La Lune Supérieure Deux a finalement fui comme un lâche, et tout ça grâce à Kuroha. Elle est vraiment devenue incroyablement forte.. Je suis tellement fier d'elle.",
+                    "Je savais qu'elle en était capable. Je l'ai toujours su.",
+                    "J'aurais aimé pouvoir lui dire à quel point j'étais fier d'elle et à quel point je l'admirais. Elle ne se rend peut-être pas compte de tout ce qu'elle représente à mes yeux, mais je suis heureux de pouvoir la voir avancer, devenir plus forte et réussir.",
+                    "Je ne veux jamais qu'elle doute de ses capacités.",
+                    "Bon, journal, je vais devoir te laisser. J'ai quelque chose à lui dire..",
+                    "Hihihihi, je l'aime !",
+                    "...",
+                    "Elle..",
+                    "Elle a été capturée.",
+                    "Un conflit contre les démons a mal tourné et Kuroha s'est retrouvée entre leurs mains.",
+                    "S'il te plaît.. S'il te plaît, ne meurs pas.",
+                    "Pas maintenant. Pas après tout ce qui vient de se passer. Tu commençais enfin à m'aimer, tu commençais à comprendre ce que je ressentais pour toi.. Tu me demandes de te faire confiance et j'essaie, vraiment.",
+                    "Mais comment veux-tu que je reste calme lorsque je sais que tu es là-bas ?",
+                    "Je n'ai pas envie de vivre dans un monde où tu n'es plus là, Kuroha. Je ne veux pas avoir à rentrer dans notre domaine en sachant que tu ne m me t'attendras plus. Je ne veux pas retrouver notre chambre vide, ne plus entendre ta voix, ne plus pouvoir poser ma tête contre la tienne.",
+                    "Je ne veux pas que les draps gardent ton absence. Je ne veux pas voir tes affaires sans pouvoir te demander pourquoi tu les as laissées là. Je ne veux pas passer devant un endroit où nous avons été ensemble en sachant que je ne pourrai plus jamais y retourner avec toi.",
+                    "Je ne veux pas apprendre à vivre sans ton sourire.",
+                    "Je ne veux pas apprendre à dormir sans toi.",
+                    "Je ne veux pas apprendre à continuer sans la femme que j'aime.",
+                    "Si je dois prendre ta place dans ces cellules pour que tu puisses sortir, alors tant pis. Je le ferai. Je donnerais ma propre liberté pour la tienne, ma tranquillité pour la tienne, tout ce que j'ai pour que tu puisses rentrer.",
+                    "Tu es l'amour de ma vie, l'amour de mon âme.. Tu es devenue ma raison d'avancer et je refuse de te laisser mourir là-bas, seule, sans avoir tout tenté pour te retrouver.",
+                    "Je ne veux pas que notre histoire se termine ainsi. Nous avons à peine commencé à vivre ce que je rêve de construire avec toi. Nous avons encore tant de choses à faire, tant de choses à découvrir, tant de souvenirs à créer.",
+                    "Je voulais devenir ton mari, Kuroha..",
+                    "Je voulais avoir une famille avec toi. Je voulais pouvoir vieillir à tes côtés et te retrouver chaque matin.",
+                    "Je ne veux pas que ces rêves deviennent simplement des choses que j'aurai imaginées.",
+                    "Je ferai absolument tout ce qui est en mon pouvoir pour t'aider.",
+                    "J'ai mal..",
+                    "J'ai vraiment mal au cœur.",
+                    "...",
+                    "Un bras.",
+                    "C'est tout ce que j'ai récupéré de la femme que j'aime.. Un seul bras, et encore, je ne sais même pas comment trouver les mots pour décrire ce que je ressens en le regardant.",
+                    "Je n'arrive pas à accepter ce que je vois.",
+                    "Je me demande où tu es. Je me demande si tu souffres, si tu m'entends, si tu sais que je suis encore là et que je n'ai pas cessé de te chercher.",
+                    "Chaque nuit est devenue un véritable cauchemar. Je n'arrive plus à dormir, respirer devient difficile et le silence me fait encore plus mal que le reste.",
+                    "Je me réveille parfois avec l'impression que tu es à côté de moi. Puis je réalise que ce n'est pas le cas, et je me retrouve face à cette réalité que je refuse d'accepter.",
+                    "Ne me quitte pas, Kuroha.. Je t'en supplie.",
+                    "J'ai eu cette vision.. Je t'ai revue dans cette dimension, mais tu n'étais pas seule. Zetsu était là lui aussi.. Mort. Ils se servaient de ton corps, comme si tu n'étais plus qu'un souvenir dont ils pouvaient disposer à leur guise.",
+                    "Je ne sais même pas si tu reviendras.",
+                    "Je ne sais plus quoi croire.",
+                    "J'ai tellement peur de fermer les yeux et de te revoir ainsi. J'ai tellement peur de découvrir que tout ce que j'espère n'est qu'une illusion.",
+                    "Mais je n'ai pas terminé de vivre avec toi. Je n'ai pas terminé notre histoire. Nous avons encore tant de choses à découvrir, tant de journées à partager, tant de nuits à passer ensemble.. Je ne peux pas accepter que tout s'arrête ici.",
+                    "Je voulais encore te faire rire. Je voulais encore t'offrir des fleurs, te préparer des surprises et t'écrire des mots que tu pourrais relire lorsque je ne serais pas auprès de toi.",
+                    "Je voulais encore pouvoir t'embrasser, te serrer contre moi et te dire que je t'aime sans avoir à craindre que ce soit la dernière fois.",
+                    "Reviens, Kuroha..",
+                    "S'il te plaît, reviens.",
+                    "Je t'attends.",
+                    "Je t'attendrai autant qu'il le faudra.",
+                    "...",
+                    "Elle est revenue.",
+                    "Ça y est.. Ma femme est revenue.",
+                    "Ma raison de vivre est de nouveau là, devant moi. Elle a perdu un bras, elle a traversé des choses que je ne peux même pas imaginer, mais elle est là.",
+                    "Elle respire.",
+                    "Je peux encore lui parler, entendre sa voix et voir ses yeux.",
+                    "Je crois que je n'ai jamais autant remercié le ciel qu'à cet instant.",
+                    "J'ai simplement envie de la prendre dans mes bras et de ne plus jamais la lâcher. De la serrer contre moi aussi longtemps que possible, comme pour rattraper toutes ces nuits pendant lesquelles je ne savais même pas si je pourrais encore la revoir.",
+                    "J'aimerais pouvoir effacer ce qu'elle a vécu. J'aimerais pouvoir prendre toute sa douleur et la porter à sa place. Je sais que je ne peux pas, que je ne peux pas changer ce qui s'est passé, mais je voudrais au moins lui offrir un endroit où elle n'aura plus besoin de se battre.",
+                    "Je crois que je n'ai jamais eu aussi peur de perdre quelqu'un.",
+                    "Et maintenant qu'elle est revenue, je veux profiter de chaque instant. Je ne veux plus considérer sa présence comme quelque chose d'acquis. Je veux lui montrer chaque jour qu'elle compte pour moi.",
+                    "Je veux prendre soin d'elle, l'aider dans ce qu'elle ne peut plus faire seule et lui rappeler qu'elle n'a pas perdu sa valeur avec ce qu'elle a subi.",
+                    "Pour moi, elle est toujours Kuroha.",
+                    "La même femme que j'aime depuis tout ce temps. Celle dont je suis tombé amoureux sans même comprendre ce qui m'arrivait. Celle que j'ai attendue, celle que j'ai cherchée, celle que j'ai cru perdre.",
+                    "Elle est toujours aussi belle à mes yeux.",
+                    "Et je crois que je l'aime encore plus qu'avant.",
+                    "...",
+                    "Un enfant..",
+                    "Elle m'a demandé si je voulais avoir un enfant avec elle.",
+                    "Bien sûr que j'accepte ! Quelle question !",
+                    "Je crois que je n'ai même pas eu besoin de réfléchir. Avoir un enfant avec la femme que j'aime, avec celle qui partage désormais ma vie.. Je crois sincèrement que c'est l'un des plus beaux cadeaux qu'elle puisse me faire.",
+                    "Je vais devenir père.. Nous allons devenir parents.",
+                    "Je n'arrive pas vraiment à imaginer ce que cela va donner. Moi, avec un enfant dans les bras ? Je ne sais même pas si je saurai m'y prendre correctement.",
+                    "Bon, par contre, je n'ai absolument aucune idée de prénom. Il va falloir qu'on réfléchisse à ça ensemble.",
+                    "J'espère simplement que nous serons à la hauteur.",
+                    "Je veux être un bon père. Je veux que cet enfant grandisse dans un foyer où il se sentira aimé et protégé. Je ne veux pas qu'il connaisse la solitude que j'ai connue lorsque j'étais petit.",
+                    "Je veux lui offrir tout ce que je n'ai pas toujours eu.",
+                    "Et surtout, je veux que Kuroha soit heureuse. Je veux la voir devenir mère, l'aider pendant cette nouvelle étape de notre vie et être présent à chaque instant. Je ne veux pas qu'elle ait à traverser ces moments seule.",
+                    "Je veux que nous apprenions ensemble.",
+                    "Je veux que notre enfant grandisse en voyant deux personnes qui s'aiment, qui se respectent et qui se soutiennent malgré les difficultés.",
+                    "Je veux qu'il sache un jour à quel point sa mère est extraordinaire.",
+                    "Parce que je crois que je pourrais passer ma vie entière à parler de cette femme sans jamais manquer de choses à dire.",
+                    "...",
+                    "Notre enfant est né.",
+                    "Il est magnifique.. Bon, ce n'est encore qu'un bébé, il ne sait pas faire grand-chose à part dormir, pleurer et manger, mais je trouve déjà qu'il nous ressemble énormément.",
+                    "Il s'appelle Kurei.",
+                    "Chaque soirée avec Kuroha est devenue encore plus belle depuis sa naissance. Chaque journée passée dans notre domaine a quelque chose de différent, quelque chose que je n'arrive pas vraiment à expliquer.",
+                    "Avant, je pensais que mon bonheur se trouvait simplement auprès de Kuroha. Maintenant, je peux le voir devant moi, dans les bras de sa mère, avec son petit visage et ses mains qui bougent dans tous les sens.",
+                    "Je regarde parfois Kuroha lorsqu'elle le tient contre elle. Elle est magnifique.. Je ne sais pas si elle se rend compte de ce que je ressens lorsque je les regarde tous les deux.",
+                    "C'est ma femme.",
+                    "C'est mon enfant.",
+                    "C'est notre famille.",
+                    "Je repense parfois au petit garçon que j'étais, celui qui écrivait dans ce livre parce qu'il voulait simplement se faire des amis. Celui qui ne comprenait pas pourquoi une fille aussi froide que Kuroha occupait déjà autant ses pensées.",
+                    "S'il pouvait me voir aujourd'hui, je crois qu'il serait très surpris.",
+                    "Il ne sait pas encore que cette fille deviendra la femme de sa vie. Il ne sait pas encore qu'il passera des nuits à penser à elle, qu'il aura peur de la perdre, qu'il lui écrira des mots qu'il n'oserait jamais lui dire à voix haute. Il ne sait pas non plus qu'un jour, il la regardera tenir leur enfant dans ses bras et qu'il aura l'impression de posséder le plus beau des trésors.",
+                    "Mon bonheur est là.. Devant moi.",
+                    "Ces deux êtres que je dois protéger. Ces deux personnes qui comptent plus que tout à mes yeux. Ma femme et mon enfant.. Ma famille.",
+                    "Pendant que j'écris, Kuroha est en train de nourrir Kurei. Elle a l'air un peu fatiguée, je devrais aller l'aider. Je ne veux pas qu'elle ait à tout porter toute seule. Après tout, nous sommes deux pour nous occuper de lui.",
+                    "Je veux être un mari sur lequel elle peut compter. Je veux être un père dont Kurei pourra être fier.",
+                    "Je crois que je commence enfin à comprendre ce que signifie avoir une famille.",
+                    "Et je veux la garder auprès de moi aussi longtemps que possible.",
+                    "Je veux encore des matins avec elle, des soirées où nous nous endormirons ensemble, des repas où Kurei fera des bêtises et des journées toutes simples qui deviendront, sans que nous le remarquions, nos plus beaux souvenirs.",
+                    "Je ne demande pas grand-chose à la vie finalement.",
+                    "Je veux simplement qu'ils soient là.",
+                    "Tous les deux."
+                ]
+            },
+            {
+                id: 5,
+                tab: "Chapitre 6",
+                kanji: "第六章 · 涙",
+                title: "6 — Pleure..",
+                entries: [
+                    "À cause d'une dispute idiote.. Elle a pleuré.",
+                    "Je suis vraiment idiot. J'ai réussi à faire pleurer ma propre femme.. Celle que j'aime, celle que j'ai tant voulu protéger, celle pour qui j'aurais autrefois tout donné sans même réfléchir.",
+                    "Et aujourd'hui, c'est moi qui lui fais du mal.",
+                    "J'ai mal au cœur en y repensant. Je me dégoûte parfois.. Comment est-ce que je peux être aussi maladroit ? J'ai une femme, j'ai un enfant, j'ai construit tout ce dont je rêvais lorsque j'étais plus jeune, et malgré ça, je continue à faire n'importe quoi.",
+                    "Je devrais être celui qui lui apporte du bonheur, pas celui qui lui donne des raisons de pleurer.",
+                    "Je me souviens de tout ce que j'ai ressenti lorsque je croyais l'avoir perdue. Je me souviens de ces nuits où je demandais simplement qu'elle revienne, de ces moments où je ne savais même plus comment respirer sans elle.",
+                    "Et maintenant qu'elle est là, maintenant que j'ai la chance de partager ma vie avec elle, je trouve encore le moyen de lui faire du mal.",
+                    "Je ne veux pas être cet homme.",
+                    "Je ne veux pas devenir quelqu'un dont elle doit se méfier, quelqu'un qui lui fait redouter les prochaines paroles ou les prochains gestes.",
+                    "Bon.. Je dois aller lui parler. Je ne veux pas laisser cette situation s'aggraver. Je dois apprendre à l'écouter correctement, à comprendre ce qu'elle ressent au lieu de toujours penser que je sais mieux que tout le monde.",
+                    "Je l'aime beaucoup trop pour continuer à agir comme ça.",
+                    "...",
+                    "Ça va un peu mieux.",
+                    "Enfin.. Je crois.",
+                    "Je ressens toujours cette peine chez elle, cette petite chose qui reste malgré nos paroles. J'ai moi aussi fini par pleurer. Je n'arrive pas toujours à garder tout ça pour moi, surtout quand je réalise que je suis responsable de sa tristesse.",
+                    "Mais je crois que c'est encore plus difficile pour elle."
+                ]
+            },
+            {
+                id: 6,
+                tab: "Chapitre 7",
+                kanji: "第七章 · 誓いと未来",
+                title: "7 — Deuxième partie..",
+                entries: [
+                    "Je dois me détendre, arrêter de tout compliquer et simplement passer une nuit avec elle. Une nuit dans ses bras, contre elle, sans conflit et sans avoir besoin de chercher les bons mots.",
+                    "Peut-être que ça nous fera du bien à tous les deux.",
+                    "J'aimerais retrouver cette tranquillité que nous avions autrefois.. Celle où sa simple présence suffisait à rendre mes journées meilleures.",
+                    "J'aimerais pouvoir me coucher à côté d'elle, déposer un baiser sur son front et lui rappeler que je l'aime. Pas pour qu'elle oublie ce qui s'est passé, ni pour faire comme si rien n'avait eu lieu.. Mais parce que même après une dispute, même lorsque nous ne sommes pas d'accord, mes sentiments ne disparaissent pas.",
+                    "Je l'aime lorsque nous rions.",
+                    "Je l'aime lorsque nous sommes silencieux.",
+                    "Je l'aime lorsque nous partageons de beaux moments, mais aussi lorsque nous devons affronter des moments difficiles.",
+                    "Je ne veux pas que nos désaccords deviennent plus importants que tout ce que nous avons construit ensemble.",
+                    "...",
+                    "Encore une fois.. J'ai fait l'idiot.",
+                    "Cette fois, je crois que j'ai dépassé la limite. La goutte de trop.. J'ai brisé sa confiance, et je crains que ce soit la fin.",
+                    "J'ai tellement peur de la perdre. Tellement peur qu'un jour elle disparaisse de ma vie et que je ne puisse plus rien faire pour la retrouver.",
+                    "Elle a peur elle aussi, je le sais.. Et pourtant, je continue. Encore et encore. Comme si je ne comprenais pas ce que mes actes pouvaient provoquer.",
+                    "Mais cette fois, je crois que je commence à comprendre.",
+                    "Son corps n'en peut plus. Elle n'arrive plus à continuer ainsi.. Elle se force, et je n'ai pas réussi à le voir. Je n'ai pas réussi à comprendre cette douleur, cette fatigue et cette peur qu'elle essayait pourtant de me faire comprendre depuis un moment.",
+                    "Elle m'avait laissé des indices. Elle m'avait donné des occasions de changer, de faire attention, de lui montrer que je pouvais enfin comprendre.. Et malgré tout ça, je n'ai rien vu.",
+                    "Je m'en veux terriblement.",
+                    "Je repense à toutes les fois où je lui ai promis que je serais là pour elle. À toutes ces paroles que j'ai prononcées lorsque je croyais que la perdre était la pire chose qui pouvait m'arriver.",
+                    "Mais je commence à comprendre que l'aimer ne signifie pas simplement avoir peur de son absence.",
+                    "L'aimer, c'est aussi savoir entendre ce qu'elle ne parvient plus à dire. C'est remarquer lorsqu'elle souffre, même lorsqu'elle ne trouve plus la force de me l'expliquer. C'est respecter ses limites, ses silences, ses besoins et ce qu'elle ressent.",
+                    "Je ne veux pas la retenir simplement parce que j'ai peur de vivre sans elle. Je ne veux pas la forcer à rester auprès de moi alors qu'elle n'en peut plus. Je l'aime trop pour faire de son amour une prison.",
+                    "Même si cette idée me détruit, je dois respecter ce qu'elle ressent et accepter que mes erreurs ont des conséquences.",
+                    "Je ne veux pas lui demander de continuer à supporter quelque chose qui lui fait du mal sous prétexte que je l'aime. Ce serait égoïste.",
+                    "Je voudrais tellement revenir en arrière. Reprendre certaines paroles, changer certains gestes, comprendre plus tôt ce qu'elle essayait de me faire comprendre. Mais je ne peux pas.",
+                    "Je dois vivre avec mes erreurs et apprendre à ne plus les reproduire.",
+                    "Mais je ne veux pas abandonner ce que je lui ai toujours promis.",
+                    "Je vais continuer d'avancer. Pas pour la forcer à revenir, pas pour lui demander de me pardonner à tout prix.. Mais parce que je dois devenir quelqu'un de meilleur. Quelqu'un qui comprend, qui écoute et qui sait protéger ceux qu'il aime autrement qu'en se battant pour eux.",
+                    "Je me souviens encore de ce que j'écrivais lorsque je n'étais qu'un enfant.. Lorsque je ne savais presque rien de ce monde et que je pensais que devenir fort suffirait à tout arranger.",
+                    "J'avais écrit :",
+                    "« Je dois protéger Kuroha.. »",
+                    "Alors cette promesse sera réelle. Cet amour aussi.",
+                    "Mais je dois enfin comprendre ce qu'elle signifie vraiment.",
+                    "Protéger Kuroha, ce n'est pas décider à sa place. Ce n'est pas vouloir la garder auprès de moi à n'importe quel prix. C'est aussi respecter sa liberté, prendre soin de son cœur et ne jamais oublier que ses sentiments comptent autant que les miens.",
+                    "Je ne veux plus être celui qui lui fait du mal.",
+                    "Je veux être à la hauteur de la confiance qu'elle m'a autrefois accordée.",
+                    "Je l'aime.. Je l'aime d'une manière que je ne saurais même pas expliquer à ce petit garçon que j'étais. Et je crois que c'est justement pour cette raison que je dois apprendre à mieux aimer.",
+                    "...",
+                    "J'ai fait un rêve étrange cette nuit.",
+                    "J'y voyais Kuroha.. Ma Kuroha. Kurei était là aussi, mais il y avait quelqu'un d'autre avec nous. Une petite fille. Elle lui ressemblait énormément, avec quelque chose dans le regard qui me rappelait immédiatement sa mère.",
+                    "Elle nous a dit qu'elle voulait devenir une héroïne avec Kurei. Qu'elle voulait devenir aussi forte que nous, mais surtout assez forte pour pouvoir nous protéger à son tour.",
+                    "Je ne sais pas vraiment pourquoi, mais cette partie du rêve m'a rendu heureux. C'était étrange.. Nous étions tous réunis, sans guerre, sans démons, sans cette peur de perdre quelqu'un qui nous accompagne toujours.",
+                    "J'ai regardé Kuroha dans ce rêve et elle avait l'air heureuse. Je crois que c'est ce qui m'a le plus marqué.",
+                    "Nous étions simplement une famille.",
+                    "Je pouvais voir Kurei grandir, courir partout et rire avec sa petite sœur. Je pouvais voir Kuroha à mes côtés, et pour une fois, rien ne semblait vouloir nous séparer.",
+                    "Je ne sais pas si ce rêve veut dire quelque chose, mais j'aimerais beaucoup qu'un jour il devienne réel.",
+                    "Peut-être que ce serait une belle chose, finalement. Une petite sœur pour Kurei.. Une nouvelle personne à aimer et à protéger.",
+                    "Bon, ce n'était qu'un rêve, mais je crois que je vais quand même poser la question à Kurei.",
+                    "...",
+                    "Je lui ai demandé.",
+                    "Kurei aimerait bien avoir une petite sœur ! Hihihi.. Je crois que ça me fait encore plus plaisir que je ne l'imaginais.",
+                    "Son anniversaire approche en plus, alors nous allons devoir lui préparer la meilleure surprise possible.",
+                    "Je dois vraiment m'organiser. Il faut d'abord que je termine de préparer et de réparer cette fameuse cabane pour Kuroha. Je veux qu'elle puisse y retrouver un endroit agréable, un petit lieu qui nous appartient et où elle pourra se reposer sans avoir à penser à quoi que ce soit.",
+                    "J'aimerais que cet endroit soit à son image. Un lieu où elle pourra se sentir bien, où elle pourra prendre le temps de respirer et où nous pourrons nous retrouver loin de tous les problèmes qui nous entourent.",
+                    "Je veux qu'elle sache que j'ai pensé à elle dans chaque détail.",
+                    "Ensuite, je m'occuperai de l'anniversaire de Kurei. Je vais faire le nécessaire pour que cette journée soit inoubliable. Je veux le voir sourire, je veux qu'il profite de cette journée et qu'il puisse se souvenir plus tard de tout l'amour que ses parents lui portent.",
+                    "Je compte également profiter de mon passage à Tokyo pour acheter un beau bouquet de fleurs et choisir un Haori pour Kuroha.",
+                    "Je veux lui faire plaisir.",
+                    "Je veux qu'elle puisse recevoir quelque chose et se dire que son mari a pensé à elle. Je veux voir son regard lorsqu'elle découvrira les fleurs, observer sa réaction lorsqu'elle découvrira le Haori et garder ce souvenir dans ma tête aussi longtemps que possible.",
+                    "Même si je ne trouve pas toujours les bons mots, même si je commets encore des erreurs, je veux qu'elle sache qu me compte toujours autant pour moi.",
+                    "Je veux qu'elle le sache aujourd'hui, demain, et tous les jours qui suivront.",
+                    "...",
+                    "C'est fou quand même..",
+                    "J'aime cette femme plus que je n'aurais jamais cru pouvoir aimer quelqu'un. Parfois, je me demande même si je ne l'aime pas plus que je n'ai aimé maman.. Je ne pensais pas qu'une personne pouvait prendre une place aussi immense dans mon cœur.",
+                    "Maman m'a donné la vie et m'a appris à avancer lorsque j'étais enfant. Je lui dois énormément et je ne pourrai jamais oublier tout ce qu'elle a fait pour moi.",
+                    "Mais Kuroha.. Kuroha est celle avec qui je veux vivre cette vie.",
+                    "C'est différent. C'est un amour que je construis chaque jour, un amour qui prend de plus en plus de place à mesure que je la découvre. Je ne pensais pas pouvoir ressentir quelque chose d'aussi fort pour quelqu'un.",
+                    "Elle est devenue la personne à qui je veux raconter mes bonnes nouvelles, celle que je cherche du regard lorsque j'entre quelque part, celle dont la voix peut changer le cours de ma journée. Je pourrais être entouré de centaines de personnes et pourtant, c'est elle que je chercherais.",
+                    "Je veux connaître chaque version d'elle.",
+                    "Celle qui sourit, celle qui boude, celle qui est fatiguée, celle qui s'énerve, celle qui ne sait pas quoi répondre et celle qui préfère rester silencieuse. Je veux l'aimer dans ses bons jours comme dans ses mauvais. Je ne veux pas seulement aimer la femme qu'elle est lorsque tout va bien. Je veux apprendre à prendre soin de notre amour lorsque les choses deviennent difficiles.",
+                    "Je veux encore découvrir des choses sur elle, même après des années. Je veux toujours avoir cette envie de lui parler, de la retrouver et de la serrer contre moi.",
+                    "Je veux être vieux à ses côtés.",
+                    "Je veux un jour regarder nos mains devenues ridées et me souvenir de toutes ces années. Je veux pouvoir lui dire que, malgré toutes les difficultés, malgré les erreurs, malgré les moments où nous avons eu peur de nous perdre, je n'ai jamais cessé de l'aimer.",
+                    "Je ne sais pas ce que les prochaines pages nous réservent. Je ne sais pas si tout sera toujours facile, ni si je réussirai à ne plus jamais faire d'erreurs. Mais je sais une chose : je veux continuer à écrire notre histoire.",
+                    "Je veux voir Kurei grandir, voir Kuroha sourire, partager encore des centaines de soirées avec eux et pouvoir me retourner un jour en me disant que nous avons traversé tout ça ensemble.",
+                    "Je veux voir notre famille s'agrandir, entendre les rires de nos enfants dans le domaine et retrouver Kuroha à mes côtés lorsque la journée sera terminée.",
+                    "Je veux encore lui offrir des fleurs sans occasion particulière. Je veux encore lui préparer des surprises, lui écrire des mots, lui prendre la main lorsque nous marchons et lui voler quelques baisers lorsqu'elle ne s'y attend pas.",
+                    "Je veux encore la faire rire.",
+                    "Je veux encore l'entendre m'appeler.",
+                    "Je veux encore pouvoir lui dire qu'elle est magnifique, même si je sais que je lui répéterai probablement des centaines de fois.",
+                    "Je l'aime.. Et je l'aimerai toute ma vie.",
+                    "Je ne sais pas si je pourrai un jour lui faire comprendre toute l'importance qu'elle a prise dans mon existence. Je ne sais même pas si les mots que j'écris ici seront un jour suffisants pour décrire ce que je ressens.",
+                    "Mais je veux continuer.",
+                    "Je veux continuer à vivre, à apprendre, à devenir meilleur. Pour Kurei, pour Kuroha.. Et aussi pour ce petit garçon que j'étais autrefois, celui qui écrivait dans ce livre en espérant simplement trouver des amis et une raison de vivre.",
+                    "Je crois que j'ai trouvé bien plus que ça.",
+                    "J'ai trouvé une famille.",
+                    "J'ai trouvé une femme que je veux aimer jusqu'à mon dernier souffle. Une femme que je veux choisir chaque jour, même lorsque la vie devient difficile. Une femme dont je veux être fier, que je veux soutenir et auprès de qui je veux continuer à grandir.",
+                    "Et lorsque je repense à toutes ces années, je me rends compte que tout a commencé par une simple rencontre.",
+                    "Une petite fille qui ne parlait pas beaucoup, qui semblait ne vouloir de personne et que les autres me conseillaient de ne pas approcher.",
+                    "Je ne savais pas encore que cette fille deviendrait mon plus grand bonheur.",
+                    "Je ne savais pas qu'un jour, je pourrais l'appeler ma femme.",
+                    "Je ne savais pas que j'aurais un enfant avec elle, que je construirais un foyer et que je trouverais auprès d'elle cette raison de vivre que maman m'avait demandé de chercher.",
+                    "Aujourd'hui, je le sais.",
+                    "Et si je pouvais retourner voir le petit Shinkiri qui écrivait ses premières lignes à onze ans, je crois que je lui dirais de ne jamais abandonner. De continuer à avancer, de continuer à croire en ses rencontres et de ne pas avoir peur d'aimer.",
+                    "Parce qu'un jour, il rencontrera Kuroha.",
+                    "Et elle deviendra.."
+                ]
+            }
+        ];
+
+        let currentChapterIndex = 0;
+
+        // Génération des pétales Sakura
+        const sakuraLayer = document.getElementById('sakuraLayer');
+        for (let i = 0; i < 28; i++) {
+            const petal = document.createElement('div');
+            petal.className = 'sakura-petal';
+            const size = Math.random() * 8 + 6;
+            petal.style.width = `${size}px`;
+            petal.style.height = `${size * 1.35}px`;
+            petal.style.left = `${Math.random() * 100}vw`;
+            petal.style.animationDuration = `${Math.random() * 6 + 7}s`;
+            petal.style.animationDelay = `${Math.random() * 5}s`;
+            sakuraLayer.appendChild(petal);
+        }
+
+        // Musique
+        const bgMusic = document.getElementById('bgMusic');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        const volumeRange = document.getElementById('volumeRange');
+        bgMusic.volume = parseFloat(volumeRange.value);
+
+        function syncAudioIcons() {
+            if (!bgMusic.paused) {
+                iconPlay.classList.add('hidden');
+                iconPause.classList.remove('hidden');
+            } else {
+                iconPlay.classList.remove('hidden');
+                iconPause.classList.add('hidden');
+            }
+        }
+
+        function toggleMusic() {
+            if (bgMusic.paused) {
+                bgMusic.play().then(syncAudioIcons).catch(() => {});
+            } else {
+                bgMusic.pause();
+                syncAudioIcons();
+            }
+        }
+
+        function updateVolume(val) {
+            bgMusic.volume = parseFloat(val);
+        }
+
+        function playPageSound() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AudioCtx();
+                const duration = 0.25;
+                const buffer = ctx.createBuffer(1, ctx.sampleRate * duration, ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < data.length; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (ctx.sampleRate * 0.08));
+                }
+                const source = ctx.createBufferSource();
+                source.buffer = buffer;
+
+                const filter = ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 1100;
+
+                const gain = ctx.createGain();
+                gain.gain.value = 0.09 * Math.max(0.2, bgMusic.volume);
+
+                source.connect(filter);
+                filter.connect(gain);
+                gain.connect(ctx.destination);
+                source.start();
+            } catch (e) {}
+        }
+
+        // Rendu du Livre
+        function renderTabs() {
+            const tabsContainer = document.getElementById('chapterTabs');
+            tabsContainer.innerHTML = '';
+
+            chapters.forEach((chap, idx) => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.textContent = chap.tab;
+                const isActive = idx === currentChapterIndex;
+                btn.className = isActive
+                    ? 'font-cinzel text-[11px] sm:text-xs tracking-wider uppercase px-3 py-1.5 rounded-full bg-red-800/80 text-amber-100 border border-amber-300/50 shadow'
+                    : 'font-cinzel text-[11px] sm:text-xs tracking-wider uppercase px-3 py-1.5 rounded-full bg-black/55 text-red-200/75 hover:text-amber-100 border border-red-900/45 transition';
+                btn.onclick = () => goToChapter(idx);
+                tabsContainer.appendChild(btn);
+            });
+        }
+
+        function renderChapter() {
+            const chap = chapters[currentChapterIndex];
+            const contentEl = document.getElementById('chapterContent');
+
+            document.getElementById('chapterSubtitle').textContent = chap.kanji;
+            document.getElementById('chapterTitle').textContent = chap.title;
+            document.getElementById('pageIndicator').textContent = `Chapitre ${currentChapterIndex + 1} / ${chapters.length}`;
+
+            contentEl.classList.remove('page-turn-anim');
+            void contentEl.offsetWidth;
+            contentEl.classList.add('page-turn-anim');
+            contentEl.scrollTop = 0;
+
+            contentEl.innerHTML = '';
+
+            chap.entries.forEach((line) => {
+                if (line === '...') {
+                    const sep = document.createElement('div');
+                    sep.className = 'py-3 flex items-center justify-center gap-3 text-red-400/65 font-cinzel text-sm tracking-[0.5em]';
+                    sep.innerHTML = '<span class="w-10 h-[1px] bg-red-800/60"></span><span>• • •</span><span class="w-10 h-[1px] bg-red-800/60"></span>';
+                    contentEl.appendChild(sep);
+                    return;
+                }
+
+                const p = document.createElement('p');
+                if (line.startsWith('«') && line.endsWith('»')) {
+                    p.className = 'italic text-red-200 pl-5 border-l-2 border-red-500/70 bg-red-950/25 py-2 pr-3 rounded-r';
+                } else if (line === 'Et elle deviendra..') {
+                    p.className = 'font-cinzel text-xl md:text-2xl text-red-300 tracking-wide pt-4 font-bold';
+                }
+                p.textContent = line;
+                contentEl.appendChild(p);
+            });
+
+            document.getElementById('prevBtn').disabled = currentChapterIndex === 0;
+            document.getElementById('nextBtn').disabled = currentChapterIndex === chapters.length - 1;
+
+            renderTabs();
+        }
+
+        function openJournal() {
+            playPageSound();
+            document.getElementById('closedBookView').classList.add('hidden');
+            document.getElementById('openBookView').classList.remove('hidden');
+            renderChapter();
+
+            if (bgMusic.paused) {
+                bgMusic.play().then(syncAudioIcons).catch(() => {});
+            }
+        }
+
+        function closeJournal() {
+            playPageSound();
+            document.getElementById('openBookView').classList.add('hidden');
+            document.getElementById('closedBookView').classList.remove('hidden');
+        }
+
+        function goToChapter(index) {
+            if (index >= 0 && index < chapters.length && index !== currentChapterIndex) {
+                currentChapterIndex = index;
+                playPageSound();
+                renderChapter();
+            }
+        }
+
+        function prevChapter() {
+            if (currentChapterIndex > 0) {
+                currentChapterIndex--;
+                playPageSound();
+                renderChapter();
+            }
+        }
+
+        function nextChapter() {
+            if (currentChapterIndex < chapters.length - 1) {
+                currentChapterIndex++;
+                playPageSound();
+                renderChapter();
+            }
+        }
+    </script>
+</body>
+</html>
